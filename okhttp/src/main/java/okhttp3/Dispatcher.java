@@ -15,6 +15,8 @@
  */
 package okhttp3;
 
+import com.google.errorprone.matchers.AnnotationHasArgumentWithValue;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,22 +37,26 @@ import okhttp3.internal.Util;
  * <p>Each dispatcher uses an {@link ExecutorService} to run calls internally. If you supply your
  * own executor, it should be able to run {@linkplain #getMaxRequests the configured maximum} number
  * of calls concurrently.
+ * 异步请求执行时的规则
+ * 该类有一个线程池；可以自己配置，但是需要设定最大请求数
  */
 public final class Dispatcher {
+    /** 最大请求数 */
   private int maxRequests = 64;
+/** 每个主机的最大请求数 */
   private int maxRequestsPerHost = 5;
   private @Nullable Runnable idleCallback;
 
-  /** Executes calls. Created lazily. */
+  /** Executes calls. Created lazily. 懒加载*/
   private @Nullable ExecutorService executorService;
 
-  /** Ready async calls in the order they'll be run. */
+  /** Ready async calls in the order they'll be run. 准备执行的异步请求队列*/
   private final Deque<AsyncCall> readyAsyncCalls = new ArrayDeque<>();
 
-  /** Running asynchronous calls. Includes canceled calls that haven't finished yet. */
+  /** Running asynchronous calls. Includes canceled calls that haven't finished yet.正在执行的异步请求队列 */
   private final Deque<AsyncCall> runningAsyncCalls = new ArrayDeque<>();
 
-  /** Running synchronous calls. Includes canceled calls that haven't finished yet. */
+  /** Running synchronous calls. Includes canceled calls that haven't finished yet. 正在执行的同步请求队列*/
   private final Deque<RealCall> runningSyncCalls = new ArrayDeque<>();
 
   public Dispatcher(ExecutorService executorService) {
@@ -132,6 +138,7 @@ public final class Dispatcher {
 
   void enqueue(AsyncCall call) {
     synchronized (this) {
+        //将异步请求加入到准备执行的异步队列中
       readyAsyncCalls.add(call);
 
       // Mutate the AsyncCall so that it shares the AtomicInteger of an existing running call to
@@ -141,6 +148,7 @@ public final class Dispatcher {
         if (existingCall != null) call.reuseCallsPerHostFrom(existingCall);
       }
     }
+    //开始执行
     promoteAndExecute();
   }
 
@@ -185,6 +193,7 @@ public final class Dispatcher {
     List<AsyncCall> executableCalls = new ArrayList<>();
     boolean isRunning;
     synchronized (this) {
+        //遍历要执行的异步请求，将请求加入到正在执行的异步请求队列中
       for (Iterator<AsyncCall> i = readyAsyncCalls.iterator(); i.hasNext(); ) {
         AsyncCall asyncCall = i.next();
 

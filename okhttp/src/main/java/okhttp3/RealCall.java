@@ -69,23 +69,28 @@ final class RealCall implements Call {
     return originalRequest;
   }
 
+  //同步请求
   @Override public Response execute() throws IOException {
     synchronized (this) {
+      //一个请求只能执行一次
       if (executed) throw new IllegalStateException("Already Executed");
       executed = true;
     }
     transmitter.timeoutEnter();
     transmitter.callStart();
     try {
-      client.dispatcher().executed(this);
+        //同步请求的关键代码
+      client.dispatcher().executed(this);//将请求放到了同步请求队列中
       return getResponseWithInterceptorChain();
     } finally {
       client.dispatcher().finished(this);
     }
   }
 
+  //异步请求
   @Override public void enqueue(Callback responseCallback) {
     synchronized (this) {
+        //同样，一个请求只能执行一次
       if (executed) throw new IllegalStateException("Already Executed");
       executed = true;
     }
@@ -146,6 +151,7 @@ final class RealCall implements Call {
     /**
      * Attempt to enqueue this async call on {@code executorService}. This will attempt to clean up
      * if the executor has been shut down by reporting the call as failed.
+     * 执行异步请求的方法
      */
     void executeOn(ExecutorService executorService) {
       assert (!Thread.holdsLock(client.dispatcher()));
@@ -165,10 +171,12 @@ final class RealCall implements Call {
       }
     }
 
+    /** 异步请求的执行，并获取返回结果的回调 */
     @Override protected void execute() {
       boolean signalledCallback = false;
       transmitter.timeoutEnter();
       try {
+          //执行各种拦截器，然后获取请求返回的结果
         Response response = getResponseWithInterceptorChain();
         signalledCallback = true;
         responseCallback.onResponse(RealCall.this, response);
@@ -199,6 +207,7 @@ final class RealCall implements Call {
     return originalRequest.url().redact();
   }
 
+  //添加或获取各种拦截器，然后执行proceed方法
   Response getResponseWithInterceptorChain() throws IOException {
     // Build a full stack of interceptors.
     List<Interceptor> interceptors = new ArrayList<>();

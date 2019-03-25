@@ -39,11 +39,12 @@ public final class CallServerInterceptor implements Interceptor {
     Request request = realChain.request();
 
     long sentRequestMillis = System.currentTimeMillis();
-
+//向服务端发起请求：发送headers
     exchange.writeRequestHeaders(request);
 
     boolean responseHeadersStarted = false;
     Response.Builder responseBuilder = null;
+    //如果Request请求的body不为空，需要包装RequestBody并发送
     if (HttpMethod.permitsRequestBody(request.method()) && request.body() != null) {
       // If there's a "Expect: 100-continue" header on the request, wait for a "HTTP/1.1 100
       // Continue" response before transmitting the request body. If we don't get that, return
@@ -81,7 +82,7 @@ public final class CallServerInterceptor implements Interceptor {
     } else {
       exchange.noRequestBody();
     }
-
+//完成请求
     if (request.body() == null || !request.body().isDuplex()) {
       exchange.finishRequest();
     }
@@ -93,7 +94,7 @@ public final class CallServerInterceptor implements Interceptor {
     if (responseBuilder == null) {
       responseBuilder = exchange.readResponseHeaders(false);
     }
-
+    //获取返回的结果
     Response response = responseBuilder
         .request(request)
         .handshake(exchange.connection().handshake())

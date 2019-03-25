@@ -85,6 +85,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
       Response response;
       boolean success = false;
       try {
+          //执行下一个拦截器的proceed方法
         response = realChain.proceed(request, transmitter, null);
         success = true;
       } catch (RouteException e) {
@@ -135,6 +136,7 @@ public final class RetryAndFollowUpInterceptor implements Interceptor {
         exchange.detachWithViolence();
       }
 
+      //重连次数followUpCount超过20次的时候，停止重连
       if (++followUpCount > MAX_FOLLOW_UPS) {
         throw new ProtocolException("Too many follow-up requests: " + followUpCount);
       }

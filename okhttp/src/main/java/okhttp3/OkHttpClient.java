@@ -119,6 +119,7 @@ import static okhttp3.internal.Util.checkDuration;
  *
  * <p>OkHttp also uses daemon threads for HTTP/2 connections. These will exit automatically if they
  * remain idle.
+ * 构建者模式
  */
 public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory {
   static final List<Protocol> DEFAULT_PROTOCOLS = Util.immutableList(

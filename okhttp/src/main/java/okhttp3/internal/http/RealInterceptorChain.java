@@ -136,6 +136,7 @@ public final class RealInterceptorChain implements Interceptor.Chain {
     }
 
     // Call the next interceptor in the chain.
+    //遍历调用每个拦截器的intercept方法
     RealInterceptorChain next = new RealInterceptorChain(interceptors, transmitter, exchange,
         index + 1, request, call, connectTimeout, readTimeout, writeTimeout);
     Interceptor interceptor = interceptors.get(index);
