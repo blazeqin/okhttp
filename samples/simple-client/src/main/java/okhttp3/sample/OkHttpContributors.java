@@ -3,8 +3,16 @@ package okhttp3.sample;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -22,7 +30,22 @@ public class OkHttpContributors {
   }
 
   public static void main(String... args) throws Exception {
-    OkHttpClient client = new OkHttpClient();
+    OkHttpClient.Builder builder = new OkHttpClient.Builder().callTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15,TimeUnit.SECONDS)
+            .cookieJar(new CookieJar() {
+              @Override
+              public void saveFromResponse(@NotNull HttpUrl url, @NotNull List<Cookie> cookies) {
+
+              }
+
+              @NotNull
+              @Override
+              public List<Cookie> loadForRequest(@NotNull HttpUrl url) {
+                return null;
+              }
+            });
+    OkHttpClient client = builder.build();
 
     // Create request for remote resource.
     Request request = new Request.Builder()

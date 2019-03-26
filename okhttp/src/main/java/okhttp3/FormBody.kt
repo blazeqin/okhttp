@@ -23,6 +23,7 @@ import okio.BufferedSink
 import java.io.IOException
 import java.nio.charset.Charset
 
+/** 构造函数中的参数并没有先固定是可变还是不可变，提高兼容性；在代码中将这些参数变为不可变#Util.immutableList */
 class FormBody internal constructor(
   encodedNames: List<String>,
   encodedValues: List<String>

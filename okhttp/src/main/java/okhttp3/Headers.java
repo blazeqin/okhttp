@@ -396,6 +396,7 @@ public final class Headers {
     }
 
     public Builder removeAll(String name) {
+      /** list可以同时删除和遍历。。。 */
       for (int i = 0; i < namesAndValues.size(); i += 2) {
         if (name.equalsIgnoreCase(namesAndValues.get(i))) {
           namesAndValues.remove(i); // name
